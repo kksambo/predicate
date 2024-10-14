@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predicate Mark Calculator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 600px;
+            margin: auto;
+        }
+        h1 {
+            color: #343a40;
+        }
+        .notice {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border: 1px solid #ffeeba;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .module-selection {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .result-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .result {
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #e9ecef;
+            border-left: 5px solid #007bff;
+            width: 50%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Predicate Mark Calculator</h1>
+<div class="notice">
+    <strong>Notice:</strong> Weightings might change. We will ensure that updates are made in a timely manner.
+</div>
+
+        <div class="module-selection">
+            <label for="moduleSelect">Select Module:</label>
+            <select id="moduleSelect" class="form-control" onchange="updateAssessmentFields()">
+                <option value="">--Select a Module--</option>
+                <option value="softwareEngineering">Software Engineering (SEF)</option>
+                <option value="informationSecurity">Information Security (ISC)</option>
+                <option value="operatingSystems">Operating Systems (ORS)</option>
+                <option value="advancedOOP">Advanced Object Oriented Programming (AOP)</option>
+            </select>
+        </div>
+
+        <form id="markForm" class="d-none">
+            <div id="assessments"></div>
+            <div class="result-container">
+                <button type="submit" class="btn btn-primary btn-block" style="width: 50%;">Calculate Predicate Mark</button>
+                <div id="result" class="result"></div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const assessmentsData = {
+            softwareEngineering: [
+                { name: "Web Test 1", weight: 0.1, maxMark: 100 },
+                { name: "Web Test 2", weight: 0.1, maxMark: 100 },
+                { name: "Web Test 3", weight: 0.1, maxMark: 100 },
+                { name: "Semester Test 1", weight: 0.3, maxMark: 100 },
+                { name: "Semester Test 2", weight: 0.3, maxMark: 100 },
+                { name: "Assignment", weight: 0.1, maxMark: 100 }
+            ],
+            informationSecurity: [
+                { name: "Web Test 1", weight: 0.05, maxMark: 100 },
+                { name: "Web Test 2", weight: 0.05, maxMark: 100 },
+                { name: "Semester Test 1", weight: 0.3, maxMark: 100 },
+                { name: "Semester Test 2", weight: 0.3, maxMark: 100 },
+                { name: "Assignment", weight: 0.3, maxMark: 100 }
+            ],
+            operatingSystems: [
+                { name: "Web Test 1", weight: 0.05, maxMark: 100 },
+                { name: "Web Test 2", weight: 0.05, maxMark: 100 },
+                { name: "Web Test 3", weight: 0.05, maxMark: 100 },
+                { name: "Semester Test 1", weight: 0.3, maxMark: 100 },
+                { name: "Semester Test 2", weight: 0.3, maxMark: 100 },
+                { name: "Assignment", weight: 0.25, maxMark: 100 }
+            ],
+            advancedOOP: [
+                { name: "Average Web Tests", weight: 0.2, maxMark: 100 },
+                { name: "Semester Test 1", weight: 0.3, maxMark: 100 },
+                { name: "Semester Test 2", weight: 0.3, maxMark: 100 },
+                { name: "Average Assignments", weight: 0.2, maxMark: 100 }
+            ]
+        };
+
+        function updateAssessmentFields() {
+            const moduleSelect = document.getElementById('moduleSelect');
+            const selectedModule = moduleSelect.value;
+            const assessmentsDiv = document.getElementById('assessments');
+            assessmentsDiv.innerHTML = '';
+
+            if (selectedModule) {
+                assessmentsData[selectedModule].forEach(assessment => {
+                    const div = document.createElement('div');
+                    div.className = 'form-group';
+                    div.innerHTML = `
+                        <label>${assessment.name} (Weight: ${assessment.weight * 100}%, Max Mark: ${assessment.maxMark})</label>
+                        <input type="number" class="form-control" placeholder="Enter mark (out of ${assessment.maxMark})" required min="0" max="${assessment.maxMark}">
+                    `;
+                    assessmentsDiv.appendChild(div);
+                });
+                document.getElementById('markForm').classList.remove('d-none');
+                document.getElementById('result').innerText = ''; // Clear previous result
+            } else {
+                document.getElementById('markForm').classList.add('d-none');
+                document.getElementById('result').innerText = ''; // Clear previous result
+            }
+        }
+
+        document.getElementById('markForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const moduleSelect = document.getElementById('moduleSelect');
+            const selectedModule = moduleSelect.value;
+
+            let totalMark = 0;
+
+            assessmentsData[selectedModule].forEach((assessment, index) => {
+                const input = document.querySelectorAll('#assessments input')[index];
+                const mark = parseFloat(input.value);
+                const weightedMark = (mark / assessment.maxMark) * assessment.weight * 100; // Calculate weighted percentage
+                totalMark += weightedMark;
+            });
+
+            document.getElementById('result').innerText = `Predicate Mark: ${totalMark.toFixed(2)}%`;
+        });
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
